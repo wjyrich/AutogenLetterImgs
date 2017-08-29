@@ -25,7 +25,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QImage *MainWindow::genImg(QString &tagSource)
+QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool massGen)
 {
     bool mixBgColors=ui->mixBgColorsBox->isChecked();
     bool drawRects=ui->drawRectsBox->isChecked();
@@ -36,6 +36,7 @@ QImage *MainWindow::genImg(QString &tagSource)
     bool invert=ui->invertBox->isChecked();
     bool addRandomLines=ui->addRandomLinesBox->isChecked();
     bool rotateLetters=ui->rotateLettersBox->isChecked();
+    bool genFileForEachLetter=ui->genFileForEachLetterBox->isChecked() && massGen;
     int rotateMinDegs=ui->rotateMinDegsBox->value();
     int rotateMaxDegs=ui->rotateMaxDegsBox->value();
     int rotateDegsVariety=(rotateMaxDegs-rotateMinDegs)+1;
@@ -105,7 +106,7 @@ QImage *MainWindow::genImg(QString &tagSource)
         p.fillRect(0,0,width,height,QBrush(QColor(invert?0:255,invert?0:255,invert?0:255)));
 
 
-    char *letters="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPYRSTUVWXYZ1234567890?=-.,:;<>(){}[]!\"'$%&/\\";
+    const char *letters="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPYRSTUVWXYZ1234567890?=-.,:;<>(){}[]!\"'$%&/\\";
     int letterCount=strlen(letters);
 
     QStringList fontFamilies=ui->fontBox->text().replace(", ","").split(",");
@@ -127,6 +128,8 @@ QImage *MainWindow::genImg(QString &tagSource)
 
     QRect pictRect(0,0,width-(arrangeLetters?(gridSize/2):0),height-(arrangeLetters?(gridSize/2):0));
     QList<QRect> rects;
+    QList<QRect> outRects;
+    QList<QString> letterStrList;
     if(!mixLineColors)
     {
         if(invert)
@@ -216,21 +219,25 @@ QImage *MainWindow::genImg(QString &tagSource)
                 y=rand()%height;
             }
             bigRect=QRect(x,y,fW,fH);
+            bool cont=false;
             if(pictRect.contains(bigRect))
             {
                 for(int j=0;j<rectCount;j++)
                 {
                     if(rects.at(j).intersects(bigRect))
-                        goto NextAttempt;
+                    {
+                        cont=true;
+                        break;
+                    }
                 }
-                break;
+                if(cont)
+                    continue;
+                else
+                    break;
             }
-            NextAttempt:
-            continue;
         }
         if(k==limitAttempts)
-            goto NoSpaceLeft;
-        rectCount++;
+            break;
         if(mixFontColors)
         {
             rC=rand()%255;
@@ -281,27 +288,31 @@ QImage *MainWindow::genImg(QString &tagSource)
             if(mixBgColors&&!addRandomLines)
             {
                 QColor bgColor;
-        NewBgColor:
-                rC=rand()%255;
-                if(useBw)
+                for(;;)
                 {
-                    while(rC<50)
-                        rC=rand()%255;
-                    gC=rC;
-                    bC=rC;
-                }
-                else
-                {
-                    gC=rand()%255;
-                    bC=rand()%255;
-                }
+                    rC=rand()%255;
+                    if(useBw)
+                    {
+                        while(rC<50)
+                            rC=rand()%255;
+                        gC=rC;
+                        bC=rC;
+                    }
+                    else
+                    {
+                        gC=rand()%255;
+                        bC=rand()%255;
+                    }
 
-                bgColor=QColor(rC,gC,bC);
-                uint32_t color1=getColor(255,rC,bC,gC);
-                uint32_t color2=getColor(fontCol.alpha(),fontCol.red(),fontCol.green(),fontCol.blue());
-                double e=getColorError(color1,color2);
-                if(e<0.2f)
-                    goto NewBgColor;
+                    bgColor=QColor(rC,gC,bC);
+                    uint32_t color1=getColor(255,rC,bC,gC);
+                    uint32_t color2=getColor(fontCol.alpha(),fontCol.red(),fontCol.green(),fontCol.blue());
+                    double e=getColorError(color1,color2);
+                    if(e<0.2f)
+                        continue;
+                    else
+                        break;
+                }
                 p.fillRect(actualRect,bgColor);
             }
 
@@ -349,27 +360,31 @@ QImage *MainWindow::genImg(QString &tagSource)
             if(mixBgColors&&!addRandomLines)
             {
                 QColor bgColor;
-        NewBgColor2:
-                rC=rand()%255;
-                if(useBw)
+                for(;;)
                 {
-                    while(rC<50)
-                        rC=rand()%255;
-                    gC=rC;
-                    bC=rC;
-                }
-                else
-                {
-                    gC=rand()%255;
-                    bC=rand()%255;
-                }
+                    rC=rand()%255;
+                    if(useBw)
+                    {
+                        while(rC<50)
+                            rC=rand()%255;
+                        gC=rC;
+                        bC=rC;
+                    }
+                    else
+                    {
+                        gC=rand()%255;
+                        bC=rand()%255;
+                    }
 
-                bgColor=QColor(rC,gC,bC);
-                uint32_t color1=getColor(255,rC,bC,gC);
-                uint32_t color2=getColor(fontCol.alpha(),fontCol.red(),fontCol.green(),fontCol.blue());
-                double e=getColorError(color1,color2);
-                if(e<0.2f)
-                    goto NewBgColor2;
+                    bgColor=QColor(rC,gC,bC);
+                    uint32_t color1=getColor(255,rC,bC,gC);
+                    uint32_t color2=getColor(fontCol.alpha(),fontCol.red(),fontCol.green(),fontCol.blue());
+                    double e=getColorError(color1,color2);
+                    if(e<0.2f)
+                        continue;
+                    else
+                        break;
+                }
                 p.fillRect(actualRect,bgColor);
             }
             p.drawText(bigRect,str); // Do not use actualRect
@@ -378,23 +393,50 @@ QImage *MainWindow::genImg(QString &tagSource)
 
         if(drawRects)
             p.drawRect(actualRect);
+        rectCount++;
         rects.append(arrangeLetters?QRect(x,y,gridSize,gridSize):actualRect);
+        if(genFileForEachLetter)
+            outRects.append(actualRect);
         char aStr[2];
         aStr[0]=letter;
         aStr[1]=0;
         char *escapeStr=text::escapeDoubleQuotationMarks(aStr);
+        QString escapeQStr=QString::fromLatin1(escapeStr);
+        letterStrList.append(escapeQStr);
         int aX=actualRect.x();
         int aY=actualRect.y();
-        tagSource+=QString(i>0?",":"")+QString("\n\
-        [\"")+QString::fromLatin1(escapeStr)+QString("\", \"rect\", ")+QString::number(aX)+QString(", ")+QString::number(aY)+QString(", ")+QString::number(aX+actualRect.width())+QString(", ")+QString::number(aY+actualRect.height())+QString("]");
+        if(!genFileForEachLetter)
+            tagSource+=QString(i>0?",":"")+QString("\n\
+        [\"")+escapeQStr+QString("\", \"rect\", ")+QString::number(aX)+QString(", ")+QString::number(aY)+QString(", ")+QString::number(aX+actualRect.width())+QString(", ")+QString::number(aY+actualRect.height())+QString("]");
         free(escapeStr);
     }
-    NoSpaceLeft:
 
-    tagSource=tagSource.replace("%tagcount%",QString::number(rectCount))+
-"\n\
+    if(!genFileForEachLetter)
+    {
+        tagSource=tagSource.replace("%tagcount%",QString::number(rectCount))+"\n\
    ]\n\
 }";
+    }
+    else
+    {
+        int rnd=rand();
+        for(int j=0;j<rectCount;j++)
+        {
+            QRect r=outRects.at(j);
+            QImage cpy=img->copy(r);
+            QString filename=QString(filenameTemplate).replace("%rand%",QString::number(rnd)).replace("%number%",QString::number(j));
+            cpy.save(filename,0,100);
+            QString tS=tagSource.replace("%tagcount%","1")+
+                    "\n\
+        [\""+letterStrList.at(j)+QString("\", \"rect\", 0, 0, ")+QString::number(r.width()-1)+QString(", ")+QString::number(r.height()-1)+"]\n\
+    ]\n\
+}";
+            QFile f(filename+QString(".taglist.json"));
+            f.open(QFile::WriteOnly|QFile::Truncate);
+            f.write(tS.toUtf8());
+            f.close();
+        }
+    }
     blankP.end();
     delete blankImg;
     p.end();
@@ -423,16 +465,30 @@ void MainWindow::massGenerateBtnClicked()
     d.mkdir(rd);
     QString dirPath=parentDir+QString("/")+rd;
     int amount=ui->massGenerateImgCountBox->value();
-    for(int i=0;i<amount;i++)
+    bool genFileForEachLetter=ui->genFileForEachLetterBox->isChecked();
+    QString tagSource;
+    if(genFileForEachLetter)
     {
-        QString tagSource;
-        QImage *img=genImg(tagSource);
-        QString r=dirPath+QString("/")+QString::number(rand())+QString(".jpg");
-        img->save(r,0,100);
-        QFile f(r+QString(".taglist.json"));
-        f.open(QFile::WriteOnly);
-        f.write(tagSource.toUtf8());
-        f.close();
+        for(int i=0;i<amount;i++)
+        {
+            QString rPath=dirPath+QString("/%rand%-%number%.jpg");
+            QImage *img=genImg(tagSource,rPath,true);
+            delete img;
+        }
+    }
+    else
+    {
+        for(int i=0;i<amount;i++)
+        {
+            QImage *img=genImg(tagSource);
+            QString r=dirPath+QString("/")+QString::number(rand())+QString(".jpg");
+            img->save(r,0,100);
+            QFile f(r+QString(".taglist.json"));
+            f.open(QFile::WriteOnly|QFile::Truncate);
+            f.write(tagSource.toUtf8());
+            f.close();
+            delete img;
+        }
     }
     QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath));
 }

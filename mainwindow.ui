@@ -125,6 +125,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="mixLineColorsBox">
+        <property name="text">
+         <string>Mix line colors</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -285,13 +292,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="mixLineColorsBox">
-        <property name="text">
-         <string>Mix line colors</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QCheckBox" name="rotateLettersBox">
         <property name="text">
          <string>Rotate letters between</string>
@@ -374,6 +374,13 @@
        <widget class="QLabel" name="label_11">
         <property name="text">
          <string>images</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="genFileForEachLetterBox">
+        <property name="text">
+         <string>File for each letter</string>
         </property>
        </widget>
       </item>

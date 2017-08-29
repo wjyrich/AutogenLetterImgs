@@ -26,7 +26,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     QRect getActualRectangle();
-    QImage *genImg(QString &tagSource);
+    QImage *genImg(QString &tagSource,QString filenameTemplate="",bool massGen=false);
 
 public slots:
     void generateBtnClicked();
