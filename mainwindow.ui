@@ -411,7 +411,7 @@
       <item>
        <widget class="QCheckBox" name="genTrainTxtBox">
         <property name="text">
-         <string>Generate train.txt/val.txt instead</string>
+         <string>Generate train.txt/val.txt instead (CAFFE)</string>
         </property>
        </widget>
       </item>
