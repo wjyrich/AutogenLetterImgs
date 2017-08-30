@@ -1,9 +1,10 @@
 # AutogenLetterImgs
-Generator of tagged images of letters, with customizable parameters such as rotation and background. Also generates associated .taglist.json files for the images (see ImageTagger). Written in Qt/C++.
+Generator of tagged images of letters, with customizable parameters such as rotation and background. Also generates associated .taglist.json files for the images (see ImageTagger).
+If specified, CAFFE-style train.txt files can also be generated. Written in Qt/C++.
 
 ## Download
 
-Download link: [Win32 binary](https://github.com/Extender/AutogenLetterImgs/raw/master/bin/autogenletterimgs-v1.0-bin-win32.zip)
+Download link: [Win32 binary](https://github.com/Extender/AutogenLetterImgs/raw/master/bin/autogenletterimgs-v1.1-bin-win32.zip)
 
 ## Screenshots
 
