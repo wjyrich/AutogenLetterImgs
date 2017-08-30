@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1103</width>
+    <width>1097</width>
     <height>502</height>
    </rect>
   </property>
@@ -143,6 +143,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="generateBtn">
+        <property name="text">
+         <string>Generate</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -342,9 +349,26 @@
        </widget>
       </item>
       <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Mass-generate into subdirectory of:</string>
+         <string>Mass-generate images into subdirectory of:</string>
         </property>
        </widget>
       </item>
@@ -385,16 +409,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="massGenerateBtn">
+       <widget class="QCheckBox" name="genTrainTxtBox">
         <property name="text">
-         <string>Mass-generate</string>
+         <string>Generate train.txt/val.txt instead</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="generateBtn">
+       <widget class="QPushButton" name="massGenerateBtn">
         <property name="text">
-         <string>Generate</string>
+         <string>Mass-generate</string>
         </property>
        </widget>
       </item>

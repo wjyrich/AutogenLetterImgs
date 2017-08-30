@@ -37,6 +37,7 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
     bool addRandomLines=ui->addRandomLinesBox->isChecked();
     bool rotateLetters=ui->rotateLettersBox->isChecked();
     bool genFileForEachLetter=ui->genFileForEachLetterBox->isChecked() && massGen;
+    bool genTrainValTxt=genFileForEachLetter && ui->genTrainTxtBox->isChecked();
     int rotateMinDegs=ui->rotateMinDegsBox->value();
     int rotateMaxDegs=ui->rotateMaxDegsBox->value();
     int rotateDegsVariety=(rotateMaxDegs-rotateMinDegs)+1;
@@ -116,7 +117,8 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
 
     // Add letters
 
-    tagSource="{\n\
+    if(!genTrainValTxt)
+        tagSource="{\n\
     \"fileFormatVersion\": 1.1,\n\
     \"minFileFormatVersion\": 1.1,\n\
     \"tagCount\": %tagcount%,\n\
@@ -129,6 +131,7 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
     QRect pictRect(0,0,width-(arrangeLetters?(gridSize/2):0),height-(arrangeLetters?(gridSize/2):0));
     QList<QRect> rects;
     QList<QRect> outRects;
+    QList<int> letterNumList;
     QList<QString> letterStrList;
     if(!mixLineColors)
     {
@@ -403,6 +406,7 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
         char *escapeStr=text::escapeDoubleQuotationMarks(aStr);
         QString escapeQStr=QString::fromLatin1(escapeStr);
         letterStrList.append(escapeQStr);
+        letterNumList.append(letterNum);
         int aX=actualRect.x();
         int aY=actualRect.y();
         if(!genFileForEachLetter)
@@ -426,15 +430,23 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
             QImage cpy=img->copy(r);
             QString filename=QString(filenameTemplate).replace("%rand%",QString::number(rnd)).replace("%number%",QString::number(j));
             cpy.save(filename,0,100);
-            QString tS=tagSource.replace("%tagcount%","1")+
-                    "\n\
-        [\""+letterStrList.at(j)+QString("\", \"rect\", 0, 0, ")+QString::number(r.width()-1)+QString(", ")+QString::number(r.height()-1)+"]\n\
-    ]\n\
-}";
-            QFile f(filename+QString(".taglist.json"));
-            f.open(QFile::WriteOnly|QFile::Truncate);
-            f.write(tS.toUtf8());
-            f.close();
+            if(genTrainValTxt)
+            {
+                QFileInfo iF(filename);
+                tagSource+=iF.fileName()+QString(" ")+QString::number(letterNumList.at(j))+QString("\n");
+            }
+            else
+            {
+                QFile f(filename+QString(".taglist.json"));
+                f.open(QFile::WriteOnly|QFile::Truncate);
+                QString tS=tagSource.replace("%tagcount%","1")+
+                        "\n\
+            [\""+letterStrList.at(j)+QString("\", \"rect\", 0, 0, ")+QString::number(r.width()-1)+QString(", ")+QString::number(r.height()-1)+"]\n\
+        ]\n\
+    }";
+                f.write(tS.toUtf8());
+                f.close();
+            }
         }
     }
     blankP.end();
@@ -466,7 +478,7 @@ void MainWindow::massGenerateBtnClicked()
     QString dirPath=parentDir+QString("/")+rd;
     int amount=ui->massGenerateImgCountBox->value();
     bool genFileForEachLetter=ui->genFileForEachLetterBox->isChecked();
-    QString tagSource;
+    QString tagSource=""; // Must be empty string!
     if(genFileForEachLetter)
     {
         for(int i=0;i<amount;i++)
@@ -474,6 +486,20 @@ void MainWindow::massGenerateBtnClicked()
             QString rPath=dirPath+QString("/%rand%-%number%.jpg");
             QImage *img=genImg(tagSource,rPath,true);
             delete img;
+        }
+        if(ui->genTrainTxtBox->isChecked())
+        {
+            QByteArray arr=tagSource.toUtf8();
+
+            QFile trainTxtFile(dirPath+QString("/train.txt"));
+            trainTxtFile.open(QFile::WriteOnly|QFile::Truncate);
+            trainTxtFile.write(arr);
+            trainTxtFile.close();
+
+            QFile valTxtFile(dirPath+QString("/val.txt"));
+            valTxtFile.open(QFile::WriteOnly|QFile::Truncate);
+            valTxtFile.write(arr);
+            valTxtFile.close();
         }
     }
     else
