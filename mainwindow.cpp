@@ -27,6 +27,13 @@ MainWindow::~MainWindow()
 
 QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool massGen)
 {
+    char *letters=strdup(ui->lettersBox->text().toStdString().c_str());
+    int letterCount=strlen(letters);
+
+    if(letterCount==0)
+        return 0;
+
+
     bool mixBgColors=ui->mixBgColorsBox->isChecked();
     bool drawRects=ui->drawRectsBox->isChecked();
     bool useBw=ui->bwBox->isChecked();
@@ -105,10 +112,6 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
     }
     else
         p.fillRect(0,0,width,height,QBrush(QColor(invert?0:255,invert?0:255,invert?0:255)));
-
-
-    const char *letters="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPYRSTUVWXYZ1234567890?=-.,:;<>(){}[]!\"'$%&/\\";
-    int letterCount=strlen(letters);
 
     QStringList fontFamilies=ui->fontBox->text().replace(", ","").split(",");
 
@@ -429,29 +432,33 @@ QImage *MainWindow::genImg(QString &tagSource, QString filenameTemplate, bool ma
             QRect r=outRects.at(j);
             QImage cpy=img->copy(r);
             QString filename=QString(filenameTemplate).replace("%rand%",QString::number(rnd)).replace("%number%",QString::number(j));
-            cpy.save(filename,0,100);
-            if(genTrainValTxt)
+            bool success = cpy.save(filename,0,100);
+            if(success)
             {
-                QFileInfo iF(filename);
-                tagSource+=iF.fileName()+QString(" ")+QString::number(letterNumList.at(j))+QString("\n");
-            }
-            else
-            {
-                QFile f(filename+QString(".taglist.json"));
-                f.open(QFile::WriteOnly|QFile::Truncate);
-                QString tS=tagSource.replace("%tagcount%","1")+
-                        "\n\
-            [\""+letterStrList.at(j)+QString("\", \"rect\", 0, 0, ")+QString::number(r.width()-1)+QString(", ")+QString::number(r.height()-1)+"]\n\
-        ]\n\
-    }";
-                f.write(tS.toUtf8());
-                f.close();
+                if(genTrainValTxt)
+                {
+                    QFileInfo iF(filename);
+                    tagSource+=iF.fileName()+QString(" ")+QString::number(letterNumList.at(j))+QString("\n");
+                }
+                else
+                {
+                    QFile f(filename+QString(".taglist.json"));
+                    f.open(QFile::WriteOnly|QFile::Truncate);
+                    QString tS=tagSource.replace("%tagcount%","1")+
+                            "\n\
+                [\""+letterStrList.at(j)+QString("\", \"rect\", 0, 0, ")+QString::number(r.width()-1)+QString(", ")+QString::number(r.height()-1)+"]\n\
+            ]\n\
+        }";
+                    f.write(tS.toUtf8());
+                    f.close();
+                }
             }
         }
     }
     blankP.end();
     delete blankImg;
     p.end();
+    free(letters);
     return img;
 }
 
@@ -459,6 +466,8 @@ void MainWindow::generateBtnClicked()
 {
     QString tagSource;
     QImage *img=genImg(tagSource);
+    if(img==0)
+        return;
     ui->tagBox->document()->setPlainText(tagSource);
     pixmapItem->setPixmap(QPixmap::fromImage(*img));
     ui->graphicsView->repaint();
@@ -507,6 +516,8 @@ void MainWindow::massGenerateBtnClicked()
         for(int i=0;i<amount;i++)
         {
             QImage *img=genImg(tagSource);
+            if(img==0)
+                continue;
             QString r=dirPath+QString("/")+QString::number(rand())+QString(".jpg");
             img->save(r,0,100);
             QFile f(r+QString(".taglist.json"));
