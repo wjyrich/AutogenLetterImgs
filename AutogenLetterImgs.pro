@@ -25,3 +25,11 @@ HEADERS  += mainwindow.h \
     text.h
 
 FORMS    += mainwindow.ui
+
+target.path = $$PREFIX/bin
+desktop.files = AutogenLetterImgs.desktop
+desktop.path = $$PREFIX/share/applications/
+icons.path = $$PREFIX/share/icons/hicolor/apps/
+icons.files = AutogenLetterImgs.png
+
+INSTALLS += target desktop icons

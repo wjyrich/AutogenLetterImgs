@@ -1,0 +1,11 @@
+[Desktop Entry]
+Categories=Accessibility;Qt;Utility;
+Exec=AutogenLetterImgs
+Name=AutogenLetterImgs
+Name[zh_CN]=AutogenLetterImgs
+Icon=AutogenLetterImgs
+StartupNotify=false
+Terminal=false
+Type=Application
+GenericName=AutogenLetterImgs
+Version=1.0
